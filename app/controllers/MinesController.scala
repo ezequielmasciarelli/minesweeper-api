@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject._
-import play.api.libs.json.{Json, OFormat, Reads, Writes}
+import play.api.libs.json.{Json, Reads, Writes}
 import play.api.mvc._
 
 import scala.util.Random
@@ -11,6 +11,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
 
   val random: Random.type = scala.util.Random
   var worldWithMines : List[Boolean] = initWorld
+  var worldWithMines2 : List[Boolean] = initWorld
+  case class MineField(hasMine: Boolean = false, discovered: Boolean = false)
 
     def initWorld : List[Boolean] = {
       (0 to 20).foldLeft(Array.ofDim[Boolean](100))((world, _) => {
@@ -22,7 +24,7 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
   def newGame: Action[AnyContent] = Action {
-    initWorld
+    worldWithMines = initWorld
     Ok("Juego Nuevo")
   }
 
@@ -31,7 +33,6 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   case class PressPlaceResponse(result: String)
   implicit val pressRequestRead: Reads[PressPlaceRequest] = Json.reads[PressPlaceRequest]
   implicit val pressResponseWrite: Writes[PressPlaceResponse] = Json.writes[PressPlaceResponse]
-  implicit val pressResponseFormat: OFormat[PressPlaceResponse] = Json.format[PressPlaceResponse]
   def pressPlace: Action[AnyContent] = Action { request =>
     request.body.asJson
       .map(_.as[PressPlaceRequest])
