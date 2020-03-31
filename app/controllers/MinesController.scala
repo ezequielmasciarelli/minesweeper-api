@@ -12,15 +12,29 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   val random: Random.type = scala.util.Random
   var worldWithMines : List[MineField] = _
   var positionsWithMines : List[Int] = _
-  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int)
+  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int, neighborsWithMines:Int = 0)
 
-    def initWorld : List[MineField] = {
+  def calculateNeighborsWithMines(xPos: Int, yPos: Int): Int = {
+    val possibleNeighborsWithMines: List[(Int,Int)] = List((xPos-1,yPos),(xPos-1,yPos-1),(xPos-1,yPos+1),(xPos,yPos+1),(xPos,yPos-1),(xPos+1,yPos+1),(xPos+1,yPos),(xPos-1,yPos+1))
+    val positionsWithMinesCord = positionsWithMines.map(each => {
+      val xPos = each % 10
+      val yPos = each / 10
+      (xPos,yPos)
+    })
+    val neighborsWithMines = positionsWithMinesCord.intersect(possibleNeighborsWithMines)
+    neighborsWithMines.length
+  }
+
+  def initWorld : List[MineField] = {
       val allPositions = (1 to 100).toList
       positionsWithMines = random.shuffle(allPositions).take(20)
       allPositions.foldLeft(List.empty[MineField])((world,act) => {
         val xPos = act % 10
         val yPos = act / 10
-        if (positionsWithMines.contains(act)) MineField(hasMine = true, discovered = false, xPos, yPos) :: world
+        if (positionsWithMines.contains(act)) {
+          val neighborsWithMines = calculateNeighborsWithMines(xPos,yPos)
+          MineField(hasMine = true, discovered = false, xPos, yPos, neighborsWithMines) :: world
+        }
         else MineField(xPos = xPos,yPos = yPos) :: world
       })
     }
