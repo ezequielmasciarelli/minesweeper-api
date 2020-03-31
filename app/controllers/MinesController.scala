@@ -12,9 +12,19 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   val random: Random.type = scala.util.Random
   var worldWithMines : List[MineField] = _
   var positionsWithMines : List[(Int,Int)] = _
-  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int, neighborsWithMines:Int = 0)
+  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int, neighborsWithMines:Int = 0) {
+    def getNeighbors : List[MineField] = {
+      val neighborsPositions: scala.List[(Int, Int)] = getNeighborsCoordinates(xPos, yPos)
+      val neighbors = neighborsPositions.flatMap(tuple => {
+        val (xPos, yPos) = tuple
+        worldWithMines.find(mine => mine.xPos == xPos && mine.yPos == yPos)
+      })
+      neighbors
+    }
 
-  def calculateNeighborsWithMines(xPos: Int, yPos: Int): Int = {
+  }
+
+  def calculateNeighborsWithMinesCount(xPos: Int, yPos: Int): Int = {
     intersectNeighborsWithPositionWithMines(xPos, yPos).length
   }
 
@@ -25,8 +35,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
         val xPos = act % 10
         val yPos = act / 10
         if (positionsWithMines.contains((xPos,yPos))) {
-          val neighborsWithMines = calculateNeighborsWithMines(xPos,yPos)
-          MineField(hasMine = true, discovered = false, xPos, yPos, neighborsWithMines) :: world
+          val neighborsWithMinesCount = calculateNeighborsWithMinesCount(xPos,yPos)
+          MineField(hasMine = true, discovered = false, xPos, yPos, neighborsWithMinesCount) :: world
         }
         else MineField(xPos = xPos,yPos = yPos) :: world
       })
@@ -43,21 +53,27 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   implicit val pressRequestRead: Reads[PressPlaceRequest] = Json.reads[PressPlaceRequest]
   implicit val pressResponseWrite: Writes[PressPlaceResponse] = Json.writes[PressPlaceResponse]
 
+  //todo - solo calcula el primer nivel de adyacencia
   //returns a value that represent how far adjacents mines ARE (0,1,2,..)
   def calculateAdjacentMines(xPos: Int, yPos: Int): Int = {
-    calculateAdjacentMinesRecursive(xPos,yPos,0)
-  }
-
-  //todo - solo calcula el primer nivel de adyacencia
-  def calculateAdjacentMinesRecursive(xPos: Int, yPos: Int, count: Int): Int = {
-    if(intersectNeighborsWithPositionWithMines(xPos, yPos).nonEmpty) 0
-    else 1
+    val currentMine = worldWithMines
+      .filter(_.xPos == xPos)
+      .filter(_.yPos == yPos)
+      .head
+    val minesAround = currentMine.getNeighbors.foldLeft(0)((acc,mine) => acc + mine.neighborsWithMines)
+    if(minesAround == 0) 1
+    else 0
   }
 
   //Esta funcion hace un AND entre las listas de vecinos con la listas de los lugares donde estan las minas
   private def intersectNeighborsWithPositionWithMines(xPos: Int, yPos: Int): List[(Int, Int)] = {
-    val possibleCoordinates: List[(Int, Int)] = List((xPos - 1, yPos), (xPos - 1, yPos - 1), (xPos - 1, yPos + 1), (xPos, yPos + 1), (xPos, yPos - 1), (xPos + 1, yPos + 1), (xPos + 1, yPos), (xPos - 1, yPos + 1))
+    val possibleCoordinates: scala.List[(Int, Int)] = getNeighborsCoordinates(xPos, yPos)
     positionsWithMines.intersect(possibleCoordinates)
+  }
+
+  private def getNeighborsCoordinates(xPos: Int, yPos: Int) = {
+    val possibleCoordinates: List[(Int, Int)] = List((xPos - 1, yPos), (xPos - 1, yPos - 1), (xPos - 1, yPos + 1), (xPos, yPos + 1), (xPos, yPos - 1), (xPos + 1, yPos + 1), (xPos + 1, yPos), (xPos - 1, yPos + 1))
+    possibleCoordinates
   }
 
   def pressPlace: Action[AnyContent] = Action { request =>
