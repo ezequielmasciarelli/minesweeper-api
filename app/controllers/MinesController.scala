@@ -10,17 +10,18 @@ import scala.util.Random
 class MinesController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
   val random: Random.type = scala.util.Random
-  var worldWithMines : List[Boolean] = initWorld
-  var worldWithMines2 : List[Boolean] = initWorld
-  case class MineField(hasMine: Boolean = false, discovered: Boolean = false)
+  var worldWithMines : List[MineField] = initWorld
+  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int)
 
-    def initWorld : List[Boolean] = {
-      (0 to 20).foldLeft(Array.ofDim[Boolean](100))((world, _) => {
-        val indexOfPlacesWithoutMines = world.zipWithIndex.filter(_._1 == false).map(_._2).toList
-        val newMinePos = random.shuffle(indexOfPlacesWithoutMines).head
-        world(newMinePos) = true
-        world
-      }).toList
+    def initWorld : List[MineField] = {
+      val allPositions = (1 to 100).toList
+      val positionsWithMines = random.shuffle(allPositions).take(20)
+      allPositions.foldLeft(List.empty[MineField])((world,act) => {
+        val xPos = act / 10
+        val yPos = act % 10
+        if (positionsWithMines.contains(act)) MineField(hasMine = true, discovered = false, xPos, yPos) :: world
+        else MineField(xPos = xPos,yPos = yPos) :: world
+      })
     }
 
   def newGame: Action[AnyContent] = Action {
@@ -36,9 +37,12 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   def pressPlace: Action[AnyContent] = Action { request =>
     request.body.asJson
       .map(_.as[PressPlaceRequest])
-      .map(request => request.xPos + request.yPos * 10)
-      .map(worldPosition => {
-        if (worldWithMines(worldPosition)) PressPlaceResponse("BOOM!")
+      .map(request => {
+        val hasMine = worldWithMines
+          .filter(_.xPos == request.xPos)
+          .find(_.yPos == request.yPos)
+          .exists(_.hasMine)
+        if (hasMine) PressPlaceResponse("BOOM!")
         else PressPlaceResponse("Safaste!")
       })
       .map(Json.toJson(_))
