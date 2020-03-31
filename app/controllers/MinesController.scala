@@ -10,8 +10,8 @@ import scala.util.Random
 class MinesController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
   val random: Random.type = scala.util.Random
-  var worldWithMines : List[MineField]
-  var positionsWithMines : List[Int]
+  var worldWithMines : List[MineField] = _
+  var positionsWithMines : List[Int] = _
   case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int)
 
     def initWorld : List[MineField] = {
@@ -41,6 +41,7 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
     calculateAdjacentMinesRecursive(xPos,yPos,0)
   }
 
+  //todo - solo calcula el primer nivel de adyacencia
   def calculateAdjacentMinesRecursive(xPos: Int, yPos: Int, count: Int): Int = {
     val possibleCoordinates: List[(Int,Int)] = List((xPos-1,yPos),(xPos-1,yPos-1),(xPos-1,yPos+1),(xPos,yPos+1),(xPos,yPos-1),(xPos+1,yPos+1),(xPos+1,yPos),(xPos-1,yPos+1))
     val positionsWithMinesCord = positionsWithMines.map(each => {
@@ -50,10 +51,10 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
     })
     val matchedCoordinates = positionsWithMinesCord.intersect(possibleCoordinates)
     if(matchedCoordinates.nonEmpty) {
-      count
+      0
     }
     else {
-      calculateAdjacentMinesRecursive(xPos,yPos,count + 1)
+      1
     }
   }
 
