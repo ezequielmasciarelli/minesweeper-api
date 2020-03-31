@@ -28,14 +28,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
       neighbors
     }
 
-    def getMinesAroundMeCount : Int = getNeighbors.count(_.hasMine)
 
-    //todo - solo calcula el primer nivel de adyacencia
-    //returns a value that represent how far adjacents mines ARE (0,1,2,..)
-    def calculateAdjacentMinesLevel : Int = {
-      if(getMinesAroundMeCount == 0) 1
-      else 0
-    }
+    def getMinesAroundMeCount : Int = getNeighbors.count(_.hasMine)
 
   }
 
@@ -61,8 +55,10 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
   case class PressPlaceRequest(xPos: Int, yPos:Int)
-  case class PressPlaceResponse(alive: Boolean, revealAdjacentMinesSquare: Int)
+  case class MineResponse(xPos:Int, yPos:Int, neighborsWithMines:Int = 0)
+  case class PressPlaceResponse(alive: Boolean, neighborsDiscovered: List[MineField] = List.empty)
   implicit val pressRequestRead: Reads[PressPlaceRequest] = Json.reads[PressPlaceRequest]
+  implicit val mineFieldWrite: Writes[MineField] = Json.writes[MineField]
   implicit val pressResponseWrite: Writes[PressPlaceResponse] = Json.writes[PressPlaceResponse]
 
   def pressPlace: Action[AnyContent] = Action { request =>
@@ -74,10 +70,12 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
           .find(_.yPos == request.yPos)
       })
       .map(mineField => {
-        if (mineField.hasMine) PressPlaceResponse(alive = false, 0)
+        if (mineField.hasMine) PressPlaceResponse(alive = false)
         else {
-          val result : Int = mineField.calculateAdjacentMinesLevel
-          PressPlaceResponse(alive = true,result)
+          if (mineField.getMinesAroundMeCount == 0) {
+            PressPlaceResponse(alive = true, neighborsDiscovered = mineField.getNeighbors)
+          }
+          else PressPlaceResponse(alive = true)
         }
       })
       .map(Json.toJson(_))
