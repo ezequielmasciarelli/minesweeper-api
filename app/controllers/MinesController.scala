@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject._
-import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 import play.api.mvc._
 
 import scala.util.Random
@@ -30,7 +30,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   case class PressPlaceRequest(xPos: Int, yPos:Int)
   case class PressPlaceResponse(result: String)
   implicit val pressRequestRead: Reads[PressPlaceRequest] = Json.reads[PressPlaceRequest]
-  implicit val pressResponseWrite: Writes[PressPlaceRequest] = Json.writes[PressPlaceRequest]
+  implicit val pressResponseWrite: Writes[PressPlaceResponse] = Json.writes[PressPlaceResponse]
+  implicit val pressResponseFormat: OFormat[PressPlaceResponse] = Json.format[PressPlaceResponse]
   def pressPlace: Action[AnyContent] = Action { request =>
     request.body.asJson
       .map(_.as[PressPlaceRequest])
@@ -39,7 +40,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
         if (worldWithMines(worldPosition)) PressPlaceResponse("BOOM!")
         else PressPlaceResponse("Safaste!")
       })
-      .map(Ok(_))
+      .map(Json.toJson(_))
+      .map(result => Ok(result))
       .getOrElse(BadRequest)
     }
 
