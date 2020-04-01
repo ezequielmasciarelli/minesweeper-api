@@ -12,6 +12,12 @@ The framework used for this application is a PLAY, and below are the realized pa
 
 The frontend application is served as a static from this same application, and shows a basic example of the game flow and how you can interact with the game. Is was done purely in JS without any library.
 
+You can try this repo yourself just by cloning it and running:
+
+sbt run
+
+That's all! Port 9000
+
 ---------------------------------------------
 
 API test
