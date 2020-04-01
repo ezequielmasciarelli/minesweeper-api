@@ -74,6 +74,10 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok("Juego Nuevo")
   }
 
+  def home: Action[AnyContent] = Action {
+    Ok(views.html.index("HELLO"))
+  }
+
 
   case class PressPlaceRequest(xPos: Int, yPos:Int)
   case class MineResponse(xPos:Int, yPos:Int, neighborsWithMines:Int = 0)
