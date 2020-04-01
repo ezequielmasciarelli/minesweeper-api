@@ -10,9 +10,11 @@ It consists in 2 main endpoints:
 
 2) POST /click => Sends at the body the X and Y coordinates and check if there is a mine inside. If there isn't, returns a 200 with the boolean alive:true and a LIST of the discovered places. Thats because if you click a mine that all their neighbors doens't have mines neither, they will became "discovered" too. This was made in a recursive way at the backend. If you step in a mine it returns alive:false and the game ends
 
-NOTES: The game was made purely in SCALA and trying to make everything most immutable as possible. The only thing that is not immutable in the map is the recursive algorithm that check the discovered mines (it was done like a graph search).
+NOTES: 
+1) The game was made purely in SCALA and trying to make everything most immutable as possible. The only thing that is not immutable in the map is the recursive algorithm that check the discovered mines (it was done like a graph search).
 The map is declared as VAR, but the list inside is immutable too.
 The framework used for this application is a PLAY, and below are the realized parts of the challenge:
+2) The frontend provided for this proyect is JUST for demonstration of the REST Service. It is ugly, done in pure JS, with no framework at all.
 
 TODOs: 
 1) The game knows when you loose, but no when you win, it's just adding one more value to the response when the size of the world - quantity of discoveredMines is equal to the quantity of mines in the map
