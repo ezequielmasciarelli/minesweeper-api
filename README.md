@@ -1,4 +1,9 @@
 # minesweeper-API
+
+You can try this code online at: https://tusistemadegestion.com.ar/minesweeper-masciarelli
+
+![image](https://user-images.githubusercontent.com/39955979/78183744-cdeee000-743e-11ea-89ee-f1130f73603b.png)
+
 Here is a simple minesweeper API that allows you to play minesweeper in a RESTFull Way.
 It consists in 2 main endpoints:
 1) GET /new => Starts a new Game. The game is allways of size 10x10 with 20 mines (it is easy to scale due to the way the map is created at the backend, but the frontend would need mayor changes)
