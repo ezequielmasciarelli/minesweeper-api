@@ -5,6 +5,13 @@
     border: 1px solid black;
 }
 
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 .flex {
     display: flex;
 }
@@ -18,4 +25,26 @@
     align-items: center;
     justify-content: center;
     font-size: 40px;
+}
+
+.dead {
+    background-color: red;
+}
+
+.notification {
+    font-size: 100px;
+    color : white;
+}
+
+.gameover {
+    background: rgba(0, 0, 0, 0.6);
+    width:      100%;
+    height:     100%;
+    z-index:    10;
+    top:        0;
+    left:       0;
+    position:   fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
