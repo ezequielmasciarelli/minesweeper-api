@@ -74,10 +74,14 @@ function checkMine(event,body) {
           element.innerHTML = "X";
           const gameover = document.createElement("div");
           const notificationDiv = document.createElement("div");
+          const tryAgain = document.createElement("a");
+          tryAgain.href = "http://localhost:9000";
+          tryAgain.innerHTML = "Try Again? (Click Me)";
           notificationDiv.innerHTML = "Game Over";
           gameover.classList.add("gameover");
           notificationDiv.classList.add("notification");
           gameover.appendChild(notificationDiv);
+          gameover.appendChild(tryAgain);
           main.appendChild(gameover)
         }
       })
