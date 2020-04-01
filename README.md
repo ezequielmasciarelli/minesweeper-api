@@ -6,7 +6,7 @@ You can try this code online at: https://tusistemadegestion.com.ar/minesweeper-m
 
 Here is a simple minesweeper API that allows you to play minesweeper in a RESTFull Way.
 It consists in 2 main endpoints:
-1) GET /new => Starts a new Game. The game is allways of size 10x10 with 20 mines (it is easy to scale due to the way the map is created at the backend, but the frontend would need mayor changes)
+1) GET /new => Starts a new Game. The game is allways of size 10x10 (100 blocks) with 20 mines (it is easy to scale due to the way the map is created at the backend, but the frontend would need mayor changes)
 
 2) POST /click => Sends at the body the X and Y coordinates and check if there is a mine inside. If there isn't, returns a 200 with the boolean alive:true and a LIST of the discovered places. Thats because if you click a mine that all their neighbors doens't have mines neither, they will became "discovered" too. This was made in a recursive way at the backend. If you step in a mine it returns alive:false and the game ends
 
@@ -14,6 +14,10 @@ NOTES: The game was made purely in SCALA and trying to make everything most immu
 The map is declared as VAR, but the list inside is immutable too.
 The framework used for this application is a PLAY, and below are the realized parts of the challenge:
 
+TODOs: 
+1) The game knows when you loose, but no when you win, it's just adding one more value to the response when the size of the world - quantity of discoveredMines is equal to the quantity of mines in the map
+2) There's only one session in the entire page (no database connection yet) so if 2 players are playing the game in different browsers the game will fail
+3) There's no client API for this proyect, it is provided AS IT IS
 
 The frontend application is served as a static from this same application, and shows a basic example of the game flow and how you can interact with the game. Is was done purely in JS without any library.
 
