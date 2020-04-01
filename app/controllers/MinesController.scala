@@ -57,8 +57,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def initWorld : List[MineField] = {
-    val allPositions = (1 to 100).toList
-    positionsWithMines = random.shuffle(allPositions).take(5).map(each => (each % 10, each / 10))
+    val allPositions = (0 to 99).toList
+    positionsWithMines = random.shuffle(allPositions).take(20).map(each => (each % 10, each / 10))
     worldWithMines = allPositions.foldLeft(List.empty[MineField])((world, act) => {
       val coordinates = (act % 10, act / 10)
       if (positionsWithMines.contains(coordinates)) {
