@@ -8,3 +8,14 @@
 .flex {
     display: flex;
 }
+
+.clicked {
+    background-color: green;
+}
+
+.mine {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}

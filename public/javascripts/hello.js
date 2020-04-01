@@ -16,10 +16,12 @@ times(10)(() => {
   times(10)(() => {
     const minefield = document.createElement("div");
     minefield.classList.add("square");
+    minefield.classList.add("mine");
+    minefield.id = `${xPos}${yPos}`;
     minefield.classList.add(`${xPos}${yPos}`);
     const myXpos = xPos;
     const myYpos = yPos;
-    minefield.addEventListener("click",() => {
+    minefield.addEventListener("click",(event) => {
       const body = {
         "xPos" : myXpos,
         "yPos" : myYpos
@@ -34,9 +36,20 @@ times(10)(() => {
           .then(res => res.json())
           .then(res => {
             if(res.alive){
+              const element = event.target;
+              element.classList.add("clicked");
+              element.innerHTML = res.currentMine.neighborsWithMines;
+              res.neighborsDiscovered.forEach(mineDiscovered => {
+                const xPos = mineDiscovered.coordinates[0];
+                const yPos = mineDiscovered.coordinates[1];
+                const neighbor = document.getElementById(`${xPos}${yPos}`);
+                neighbor.classList.add("clicked");
+                neighbor.innerHTML = mineDiscovered.neighborsWithMines;
+              });
               console.log("Sigue vivo")
             }
             else{
+
               console.log("Murio")
             }
           })

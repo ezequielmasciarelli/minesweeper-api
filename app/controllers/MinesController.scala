@@ -58,7 +58,7 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def initWorld : List[MineField] = {
     val allPositions = (0 to 99).toList
-    positionsWithMines = random.shuffle(allPositions).take(20).map(each => (each % 10, each / 10))
+    positionsWithMines = random.shuffle(allPositions).take(10).map(each => (each % 10, each / 10))
     worldWithMines = allPositions.foldLeft(List.empty[MineField])((world, act) => {
       val coordinates = (act % 10, act / 10)
       if (positionsWithMines.contains(coordinates)) {
@@ -75,13 +75,13 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def home: Action[AnyContent] = Action {
-    Ok(views.html.index("HELLO"))
+    Ok(views.html.index("Minesweeper"))
   }
 
 
   case class PressPlaceRequest(xPos: Int, yPos:Int)
   case class MineResponse(xPos:Int, yPos:Int, neighborsWithMines:Int = 0)
-  case class PressPlaceResponse(alive: Boolean, neighborsDiscovered: List[MineField] = List.empty)
+  case class PressPlaceResponse(alive: Boolean, currentMine: MineField, neighborsDiscovered: List[MineField] = List.empty)
   implicit val pressRequestRead: Reads[PressPlaceRequest] = Json.reads[PressPlaceRequest]
   implicit val mineFieldWrite: Writes[MineField] = Json.writes[MineField]
   implicit val pressResponseWrite: Writes[PressPlaceResponse] = Json.writes[PressPlaceResponse]
@@ -92,16 +92,16 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
       .map(request => (request.xPos,request.yPos))
       .flatMap(coordinate => worldWithMines.find(_.coordinates == coordinate))
       .map(mineField => {
-        if (mineField.hasMine) PressPlaceResponse(alive = false)
+        if (mineField.hasMine) PressPlaceResponse(alive = false,currentMine = mineField)
         else {
           worldWithMines = worldWithMines.filterNot(_.equals(mineField))
           val mineFieldDiscovered = mineField.copy(discovered = true)
           worldWithMines = mineFieldDiscovered :: worldWithMines
           if (mineField.getMinesAroundMeCount == 0) {
             val discoveredNeighbors = mineField.discoverNeighbors
-            PressPlaceResponse(alive = true, neighborsDiscovered = mineFieldDiscovered :: discoveredNeighbors)
+            PressPlaceResponse(alive = true, neighborsDiscovered = discoveredNeighbors, currentMine = mineField)
           }
-          else PressPlaceResponse(alive = true,neighborsDiscovered = List(mineFieldDiscovered))
+          else PressPlaceResponse(alive = true,neighborsDiscovered = List.empty, currentMine = mineField)
         }
       })
       .map(Json.toJson(_))
