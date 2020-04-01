@@ -12,20 +12,21 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   val random: Random.type = scala.util.Random
   var worldWithMines : List[MineField] = _
   var positionsWithMines : List[(Int,Int)] = _
-  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, xPos:Int, yPos:Int, neighborsWithMines:Int = 0) {
+  case class MineField(hasMine:Boolean = false, discovered:Boolean = false, coordinates: (Int,Int), neighborsWithMines:Int = 0) {
 
-    private def getNeighborsCoordinates(xPos: Int, yPos: Int): List[(Int, Int)] = {
-      val possibleCoordinates: List[(Int, Int)] = List((xPos - 1, yPos), (xPos - 1, yPos - 1), (xPos - 1, yPos + 1), (xPos, yPos + 1), (xPos, yPos - 1), (xPos + 1, yPos + 1), (xPos + 1, yPos), (xPos - 1, yPos + 1))
-      possibleCoordinates
-    }
+    private def getNeighborsCoordinates: List[(Int, Int)] =
+      List((coordinates._1 - 1, coordinates._2),
+          (coordinates._1 - 1, coordinates._2 - 1),
+          (coordinates._1 - 1, coordinates._2 + 1),
+          (coordinates._1, coordinates._2 + 1),
+          (coordinates._1, coordinates._2 - 1),
+          (coordinates._1 + 1, coordinates._2 + 1),
+          (coordinates._1 + 1, coordinates._2),
+          (coordinates._1 - 1, coordinates._2 + 1))
 
     def getNeighbors : List[MineField] = {
-      val neighborsPositions: List[(Int, Int)] = getNeighborsCoordinates(xPos, yPos)
-      val neighbors = neighborsPositions.flatMap(tuple => {
-        val (xPos, yPos) = tuple
-        worldWithMines.find(mine => mine.xPos == xPos && mine.yPos == yPos)
-      })
-      neighbors
+      getNeighborsCoordinates
+        .flatMap(tuple => worldWithMines.find(_.coordinates == tuple))
     }
 
 
@@ -37,12 +38,11 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
     val allPositions = (1 to 100).toList
     positionsWithMines = random.shuffle(allPositions).take(20).map(each => (each % 10, each / 10))
     worldWithMines = allPositions.foldLeft(List.empty[MineField])((world, act) => {
-      val xPos = act % 10
-      val yPos = act / 10
-      if (positionsWithMines.contains((xPos, yPos))) {
-        MineField(hasMine = true, discovered = false, xPos, yPos) :: world
+      val coordinates = (act % 10, act / 10)
+      if (positionsWithMines.contains(coordinates)) {
+        MineField(hasMine = true, discovered = false, coordinates) :: world
       }
-      else MineField(xPos = xPos, yPos = yPos) :: world
+      else MineField(coordinates = coordinates) :: world
     })
     //Esto se debe hacer al final para poder inicializar la cantidad de minas en el minefield, se podria calcular en runtime tambien
     worldWithMines.map(each => each.copy(neighborsWithMines = each.getMinesAroundMeCount))
@@ -64,11 +64,8 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
   def pressPlace: Action[AnyContent] = Action { request =>
     request.body.asJson
       .map(_.as[PressPlaceRequest])
-      .flatMap(request => {
-        worldWithMines
-          .filter(_.xPos == request.xPos)
-          .find(_.yPos == request.yPos)
-      })
+      .map(request => (request.xPos,request.yPos))
+      .flatMap(coordinate => worldWithMines.find(_.coordinates == coordinate))
       .map(mineField => {
         if (mineField.hasMine) PressPlaceResponse(alive = false)
         else {
