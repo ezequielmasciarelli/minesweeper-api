@@ -10,7 +10,7 @@ import services.World._
 class MinesController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
   def newGame: Action[AnyContent] = Action {
-    initGame()
+    worldWithMines = initGame()
     Ok
   }
 
@@ -35,7 +35,7 @@ class MinesController @Inject()(cc: ControllerComponents) extends AbstractContro
           worldWithMines = worldWithMines.filterNot(_.equals(mineField))
           val mineFieldDiscovered = mineField.copy(discovered = true)
           worldWithMines = mineFieldDiscovered :: worldWithMines
-          if (mineField.getMinesAroundMeCount == 0) {
+          if (mineField.neighborsWithMines == 0) {
             val discoveredNeighbors = mineField.discoverNeighbors
             PressPlaceResponse(alive = true, neighborsDiscovered = discoveredNeighbors, currentMine = mineField)
           }

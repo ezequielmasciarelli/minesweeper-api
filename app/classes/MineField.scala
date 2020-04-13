@@ -5,9 +5,8 @@ import services.World._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-case class MineField(hasMine:Boolean = false, discovered:Boolean = false, coordinates: (Int,Int), neighborsWithMines:Int = 0) {
-
-  private def getNeighborsCoordinates: List[(Int, Int)] =
+object MineField {
+  def getNeighborsCoordinates(implicit coordinates: (Int,Int)): List[(Int, Int)] =
     List((coordinates._1 - 1, coordinates._2),
       (coordinates._1 - 1, coordinates._2 - 1),
       (coordinates._1 - 1, coordinates._2 + 1),
@@ -16,12 +15,14 @@ case class MineField(hasMine:Boolean = false, discovered:Boolean = false, coordi
       (coordinates._1 + 1, coordinates._2 + 1),
       (coordinates._1 + 1, coordinates._2),
       (coordinates._1 + 1, coordinates._2 - 1))
+}
+
+case class MineField(hasMine:Boolean = false, discovered:Boolean = false, coordinates: (Int,Int), neighborsWithMines:Int = 0) {
 
   def getNeighbors : List[MineField] =
-    getNeighborsCoordinates
+    MineField
+      .getNeighborsCoordinates(coordinates)
       .flatMap(tuple => worldWithMines.find(_.coordinates == tuple))
-
-  def getMinesAroundMeCount : Int = getNeighbors.count(_.hasMine)
 
   def discoverNeighbors: List[MineField] = {
     val neighbors: mutable.ListBuffer[MineField] = ListBuffer()
