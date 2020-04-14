@@ -25,9 +25,12 @@ case class MineField(hasMine:Boolean = false, discovered:Boolean = false, coordi
       .flatMap(tuple => worldWithMines.find(_.coordinates == tuple))
 
   def discoverNeighbors: List[MineField] = {
-    val neighbors: mutable.ListBuffer[MineField] = ListBuffer()
-    discoverOtherNeighbors(neighbors)
-    neighbors.toList
+    if(neighborsWithMines != 0) List.empty
+    else {
+      val neighbors: mutable.ListBuffer[MineField] = ListBuffer()
+      discoverOtherNeighbors(neighbors)
+      neighbors.toList
+    }
   }
 
   private def discoverOtherNeighbors(neighbors: ListBuffer[MineField]) : Unit = {
