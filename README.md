@@ -17,9 +17,8 @@ The framework used for this application is a PLAY, and below are the realized pa
 2) The frontend provided for this proyect is JUST for demonstration of the REST Service. It is ugly, done in pure JS, with no framework at all.
 
 TODOs: 
-1) The game knows when you loose, but no when you win, it's just adding one more value to the response when the size of the world - quantity of discoveredMines is equal to the quantity of mines in the map
-2) There's only one session in the entire page (no database connection yet) so if 2 players are playing the game in different browsers the game will fail
-3) There's no client API for this proyect, it is provided AS IT IS
+1) There's only one session in the entire page (no database connection yet) so if 2 players are playing the game in different browsers the game will fail
+2) There's no client API for this proyect, it is provided AS IT IS
 
 The frontend application is served as a static from this same application, and shows a basic example of the game flow and how you can interact with the game. Is was done purely in JS without any library.
 
