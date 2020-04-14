@@ -45,6 +45,25 @@ times(10)(() => {
   yPos++;
 });
 
+function gameover(win) {
+  const gameover = document.createElement("div");
+  const notificationDiv = document.createElement("div");
+  const tryAgain = document.createElement("a");
+  tryAgain.href = "http://localhost:9000";
+  tryAgain.innerHTML = "Try Again? (Click Me)";
+  if(!win){
+    notificationDiv.innerHTML = "Game Over";
+  }
+  else {
+    notificationDiv.innerHTML = "You Won!";
+  }
+  gameover.classList.add("gameover");
+  notificationDiv.classList.add("notification");
+  gameover.appendChild(notificationDiv);
+  gameover.appendChild(tryAgain);
+  main.appendChild(gameover)
+}
+
 function checkMine(event,body) {
   fetch(`http://localhost:9000/click`, {
     method: 'POST',
@@ -56,6 +75,9 @@ function checkMine(event,body) {
       .then(res => res.json())
       .then(res => {
         const element = event.target;
+        if(res.win) {
+          gameover(true)
+        }
         if(res.alive){
           element.classList.add("clicked");
           element.innerHTML = res.currentMine.neighborsWithMines;
@@ -72,17 +94,7 @@ function checkMine(event,body) {
           console.log("Murio");
           element.classList.add("dead");
           element.innerHTML = "X";
-          const gameover = document.createElement("div");
-          const notificationDiv = document.createElement("div");
-          const tryAgain = document.createElement("a");
-          tryAgain.href = "http://localhost:9000";
-          tryAgain.innerHTML = "Try Again? (Click Me)";
-          notificationDiv.innerHTML = "Game Over";
-          gameover.classList.add("gameover");
-          notificationDiv.classList.add("notification");
-          gameover.appendChild(notificationDiv);
-          gameover.appendChild(tryAgain);
-          main.appendChild(gameover)
+          gameover(false);
         }
       })
 }

@@ -1,25 +1,21 @@
 package services
 
 import classes.MineField
-
-import scala.util.Random
+import scala.math.Integral.Implicits._
 
 object World {
-  val random: Random.type = scala.util.Random
-
   var worldWithMines : List[MineField] = _
-  var positionsWithMines : List[(Int,Int)] = _
 
-  def initGame() : Unit = {
+  def initGame() : List[MineField] = {
     val allPositions = (0 to 99).toList
-    positionsWithMines = random.shuffle(allPositions).take(10).map(each => (each % 10, each / 10))
-    worldWithMines = allPositions.foldLeft(List.empty[MineField])((world, act) => {
-      val coordinates = (act % 10, act / 10)
-      if (positionsWithMines.contains(coordinates)) {
-        MineField(hasMine = true, discovered = false, coordinates) :: world
-      }
-      else MineField(coordinates = coordinates) :: world
+    val toCoordinates : Int => (Int,Int) = _ /% 10
+    val coordinatesWithMines = scala.util.Random.shuffle(allPositions).take(10).map(toCoordinates)
+    val iHaveAMine : ((Int,Int)) => Boolean = coordinatesWithMines.contains
+    allPositions.foldLeft(List.empty[MineField])((world, act) => {
+      val coordinates: (Int, Int) = toCoordinates(act)
+      val neighborsWithMinesCount: Int = MineField.getNeighborsCoordinates(coordinates).intersect(coordinatesWithMines).length
+      if (iHaveAMine(coordinates)) MineField(hasMine = true, coordinates = coordinates,neighborsWithMines = neighborsWithMinesCount) :: world
+      else MineField(coordinates = coordinates, neighborsWithMines = neighborsWithMinesCount) :: world
     })
-    worldWithMines = worldWithMines.map(each => each.copy(neighborsWithMines = each.getMinesAroundMeCount))
   }
 }
